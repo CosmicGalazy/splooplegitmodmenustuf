@@ -1,98 +1,78 @@
-    // V2 T.T.R Overlay script
-    const overlayModule = {
-        active: true, // Set to true to make it automatically on
-        overlay: null,
-        addStyle: function(css) {
-            const style = document.createElement('style');
-            style.textContent = css;
-            document.head.appendChild(style);
-        },
-        excludeWhiteElements: function() {
-            const elements = document.getElementsByTagName('*');
-            let i = 0;
+(function() {
+    'use strict';
 
-            function processElement() {
-                if (i < elements.length) {
-                    const element = elements[i];
-                    const computedStyle = window.getComputedStyle(element);
-                    const color = computedStyle.color.toLowerCase();
-                    const backgroundColor = computedStyle.backgroundColor.toLowerCase();
-                    const borderColor = computedStyle.borderColor.toLowerCase();
-                    if (
-                        overlayModule.isHighLevelOfWhite(color) ||
-                        overlayModule.isHighLevelOfWhite(backgroundColor) ||
-                        overlayModule.isHighLevelOfWhite(borderColor)
-                    ) {
-                        element.style.textShadow = 'none';
-                        element.style.boxShadow = 'none';
-                        element.style.backgroundColor = 'transparent';
-                        // Add any other styles you want to exclude for elements with a high level of white color
-                    }
-                    i++;
-                    setTimeout(processElement, 50); // Delay of 0.05 seconds (50 milliseconds)
-                }
-            }
-
-            processElement();
-        },
-        isHighLevelOfWhite: function(color) {
-            const rgbaMatch = color.match(/rgba?\((\d+), (\d+), (\d+)(?:, [\d.]+)?\)/);
-            if (rgbaMatch) {
-                const [, r, g, b] = rgbaMatch.map(Number);
-                return r > 220 && g > 220 && b > 220;
-            }
-            return color === 'rgb(255, 255, 255)' || color === '#ffffff' || color === 'white';
-        },
-        initialize: function() {
-            // Add a radial gradient transparent black overlay to the page, excluding elements with a high level of white color
-            overlayModule.addStyle(`
-                .overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: radial-gradient(circle, transparent 0%, rgba(0, 0, 0, 0.6) 70%, rgba(0, 0, 0, 0.7) 100%);
-                    z-index: 9998;
-                    pointer-events: none;
-                }
-            `);
-
-            // Create the overlay element
-            overlayModule.overlay = document.createElement('div');
-            overlayModule.overlay.classList.add('overlay');
-
-            // Append the overlay to the body
-            document.body.appendChild(overlayModule.overlay);
-
-            // Exclude elements with a high level of white color from being affected by the overlay
-            overlayModule.excludeWhiteElements();
-
-            // Observe mutations in the document to handle dynamically added elements
-            const observer = new MutationObserver(overlayModule.excludeWhiteElements);
-            observer.observe(document.documentElement, { childList: true, subtree: true });
-        },
-        toggleOverlay: function() {
-            if (overlayModule.active) {
-                overlayModule.active = false;
-                overlayModule.overlay.style.display = 'none';
-            } else {
-                overlayModule.active = true;
-                overlayModule.overlay.style.display = 'block';
-            }
-        },
-    };
-
-    // Toggle V2 T.T.R Overlay on button click
-    const overlayModuleButton = document.getElementById('overlay-module-button');
-    const overlayButton = overlayModuleButton.querySelector('button');
-
-    overlayModuleButton.addEventListener('click', function() {
-        overlayModule.toggleOverlay();
-        overlayButton.textContent = overlayModule.active ? 'ON' : 'OFF';
-    });
-
-    // Call the overlay module initialization if it's active
-    if (overlayModule.active) {
-        overlayModule.initialize();
+    // Function to add CSS styles
+    function addStyle(css) {
+        const style = document.createElement('style');
+        style.textContent = css;
+        document.head.appendChild(style);
     }
+
+    // Add a radial gradient transparent black overlay to the page, excluding elements with a high level of white color
+    addStyle(`
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 0%, rgba(0, 0, 0, 0.6) 70%, rgba(0, 0, 0, 0.7) 100%);
+            z-index: 9999;
+            pointer-events: none;
+        }
+    `);
+
+    // Create the overlay element
+    const overlay = document.createElement('div');
+    overlay.classList.add('overlay');
+
+    // Append the overlay to the body
+    document.body.appendChild(overlay);
+
+    // Exclude elements with a high level of white color from being affected by the overlay
+    function excludeWhiteElements() {
+        const elements = document.getElementsByTagName('*');
+        let i = 0;
+
+        function processElement() {
+            if (i < elements.length) {
+                const element = elements[i];
+                const computedStyle = window.getComputedStyle(element);
+                const color = computedStyle.color.toLowerCase();
+                const backgroundColor = computedStyle.backgroundColor.toLowerCase();
+                const borderColor = computedStyle.borderColor.toLowerCase();
+                if (
+                    isHighLevelOfWhite(color) ||
+                    isHighLevelOfWhite(backgroundColor) ||
+                    isHighLevelOfWhite(borderColor)
+                ) {
+                    element.style.textShadow = 'none';
+                    element.style.boxShadow = 'none';
+                    element.style.backgroundColor = 'transparent';
+                    // Add any other styles you want to exclude for elements with a high level of white color
+                }
+                i++;
+                setTimeout(processElement, 50); // Delay of 0.05 seconds (50 milliseconds)
+            }
+        }
+
+        processElement();
+    }
+
+    // Helper function to check if a color has a high level of white
+    function isHighLevelOfWhite(color) {
+        const rgbaMatch = color.match(/rgba?\((\d+), (\d+), (\d+)(?:, [\d.]+)?\)/);
+        if (rgbaMatch) {
+            const [, r, g, b] = rgbaMatch.map(Number);
+            return r > 220 && g > 220 && b > 220;
+        }
+        return color === 'rgb(255, 255, 255)' || color === '#ffffff' || color === 'white';
+    }
+
+    // Call the function initially
+    excludeWhiteElements();
+
+    // Observe mutations in the document to handle dynamically added elements
+    const observer = new MutationObserver(excludeWhiteElements);
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
