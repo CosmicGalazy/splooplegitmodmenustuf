@@ -1,3 +1,4 @@
+// External CPS Counter script (cps_counter.js)
 const Cps = {
   log: console.log,
   count: 0,
@@ -37,7 +38,7 @@ const Cps = {
   updateText() {
     this.element.setText(this.count);
   },
-  update: async function() {
+  update: async function () {
     this.increase();
     await this.sleep();
     this.reduce();
@@ -59,3 +60,29 @@ document.addEventListener("keyup", event => {
   if (event.code !== "Space") return;
   Cps.spaceActive = false;
 });
+
+// Toggle CPS Counter function
+function toggleCpsCounter() {
+  const cpsButton = document.getElementById('cps-counter-button');
+  const cpsCounterActive = cpsButton.textContent === 'ON';
+
+  if (cpsCounterActive) {
+    cpsButton.textContent = 'OFF';
+    Cps.element.style.display = 'none'; // Hide CPS counter
+    document.removeEventListener("mousedown", Cps.update);
+    document.removeEventListener("keydown", spaceKeyDownHandler);
+    document.removeEventListener("keyup", spaceKeyUpHandler);
+    Cps.spaceActive = false;
+    Cps.count = 0;
+    Cps.updateText();
+  } else {
+    cpsButton.textContent = 'ON';
+    Cps.element.style.display = 'block'; // Show CPS counter
+    document.addEventListener("mousedown", Cps.update);
+    document.addEventListener("keydown", spaceKeyDownHandler);
+    document.addEventListener("keyup", spaceKeyUpHandler);
+  }
+}
+
+// Add event listener for CPS Counter button
+document.getElementById('cps-counter-button').addEventListener('click', toggleCpsCounter);
