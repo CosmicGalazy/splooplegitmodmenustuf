@@ -1,0 +1,121 @@
+    // Smooth Health Bar script
+    let entityID = 0;
+    const entitys1 = [];
+    const entitys2 = [];
+    const animDates = {
+        lastUpdate: Date.now(),
+        now: Date.now(),
+        delta: 0
+    };
+
+    class Entity {
+        constructor(x, y, health) {
+            this.x = x;
+            this.y = y;
+            this.health = health;
+            this.oldHealth = health;
+            this.animHealth = health;
+            this.backgroundAnim = health;
+            this.dmgIndex = 0;
+            this.healIndex = 1;
+            this.animHealthIndex = 0;
+        }
+
+        updateHealth(newHealth) {
+            this.oldHealth = this.health;
+            this.health = newHealth;
+            this.dmgOrHealValue = this.health - this.oldHealth;
+        }
+
+        updateAnimHealth(delta) {
+            let { oldHealth: oldHP, health: newHP, animHealth: animHP, backgroundAnim: bgHP, animHealthIndex: animIndex, dmgIndex, healIndex } = this;
+            const isDmg = this.dmgOrHealValue < 0;
+            const isHeal = this.dmgOrHealValue > 0;
+
+            if (isDmg) {
+                if (oldHP > bgHP) bgHP = oldHP;
+                if (oldHP >= animHP && animIndex === dmgIndex) animHP = oldHP;
+                if (animIndex === healIndex) animIndex = dmgIndex;
+            }
+            if (isHeal) {
+                if (oldHP <= animHP && animIndex === healIndex) animHP = oldHP;
+                if (animIndex === dmgIndex) animIndex = healIndex;
+            }
+
+            this.animHealthIndex = animIndex;
+            this.backgroundAnim = bgHP;
+            if (animIndex === dmgIndex) {
+                const maxBgAnimHealth = Math.max(newHP, bgHP - delta / 25);
+                const maxAnimHealth = Math.max(newHP, animHP - delta / 5);
+
+                this.backgroundAnim = Math.max(maxBgAnimHealth, 0);
+                this.animHealth = Math.max(maxAnimHealth, 0);
+            }
+            if (animIndex === healIndex) {
+                const maxAnimHealth = Math.min(newHP, animHP + delta / 5);
+                this.animHealth = Math.min(maxAnimHealth, 100);
+            }
+        }
+    }
+
+    const canvasPrototype = CanvasRenderingContext2D.prototype;
+
+    canvasPrototype.fillRect = new Proxy(canvasPrototype.fillRect, {
+        apply(sourceFunction, that, callingArguments) {
+            const { fillStyle } = that;
+            if (["#a4cc4f", "#cc5151"].includes(fillStyle)) {
+                if (animDates.now != Date.now()) {
+                    animDates.now = Date.now();
+                    animDates.delta = animDates.now - animDates.lastUpdate;
+                    animDates.lastUpdate = animDates.now;
+                }
+
+                const [x, y, width, height] = callingArguments;
+                const health = Math.round((width / 95) * 100);
+                let entity = new Entity(x, y, health);
+
+                if (!entitys1[entityID]) entitys1.push(entity);
+                entitys2.push(entity);
+
+                entity = entitys1[entityID++];
+                entity.updateHealth(health);
+                entity.updateAnimHealth(animDates.delta);
+
+                const animHealthWidth = (entity.animHealth / 100) * 95;
+                const animBgWidth = (entity.backgroundAnim / 100) * 95;
+
+                that.fillStyle = "#fff";
+                sourceFunction.apply(that, [x, y, animBgWidth, height]);
+                that.fillStyle = fillStyle;
+                return sourceFunction.apply(that, [x, y, animHealthWidth, height]);
+            }
+            return sourceFunction.apply(that, callingArguments);
+        }
+    });
+
+    canvasPrototype.clearRect = new Proxy(canvasPrototype.clearRect, {
+        apply(sourceFunction, that, callingArguments) {
+            if (that.canvas.id === "game-canvas") {
+                if (entitys1.length !== entitys2.length) entitys1.length = 0;
+                entitys2.length = 0;
+                entityID = 0;
+            }
+
+            return sourceFunction.apply(that, callingArguments);
+        }
+    });
+
+    // Toggle Smooth Health Bar on button click
+    const smoothHealthBarButton = document.getElementById('smooth-health-bar-button');
+    const smoothHealthButton = smoothHealthBarButton.querySelector('button');
+    let smoothHealthBarActive = true; // Set to true to make it automatically on
+
+    smoothHealthBarButton.addEventListener('click', function() {
+        if (smoothHealthBarActive) {
+            smoothHealthBarActive = false;
+            smoothHealthButton.textContent = 'OFF';
+        } else {
+            smoothHealthBarActive = true;
+            smoothHealthButton.textContent = 'ON';
+        }
+    });
