@@ -1,33 +1,51 @@
+// Function to querySelectorAll
 function querySelectorAll(selector) {
-	return Array.from(document.querySelectorAll(selector));
+    return Array.from(document.querySelectorAll(selector));
 }
 
+// Function to set styles
 const setStyle = (element, styles) => {
-	if (element) {
-		Object.assign(element.style, styles);
-	}
+    if (element) {
+        Object.assign(element.style, styles);
+    }
 };
 
-const hatMenu = querySelectorAll("#hat-menu")[0];
-setStyle(hatMenu, {
-	background: "transparent",
-	opacity: 0.3,
-});
+// Function to initialize Limpid Hat Menu
+const initializeLimpidHatMenu = () => {
+    const hatMenu = querySelectorAll("#hat-menu")[0];
+    setStyle(hatMenu, {
+        background: "transparent",
+        opacity: 0.3,
+    });
 
-const hatMenuContent = querySelectorAll("#hat_menu_content")[0];
-setStyle(hatMenuContent, {
-	background: "transparent",
-});
+    const hatMenuContent = querySelectorAll("#hat_menu_content")[0];
+    setStyle(hatMenuContent, {
+        background: "transparent",
+    });
 
-const subcontentBackground = querySelectorAll(".subcontent-bg")[0];
-setStyle(subcontentBackground, {
-	boxShadow: "none",
-	border: "none",
-});
+    const subcontentBackground = querySelectorAll(".subcontent-bg")[0];
+    setStyle(subcontentBackground, {
+        boxShadow: "none",
+        border: "none",
+    });
 
-const menuItems = querySelectorAll(".menu .content .menu-item");
-menuItems.forEach((item) => {
-	setStyle(item, {
-		borderBottom: "none",
-	});
+    const menuItems = querySelectorAll(".menu .content .menu-item");
+    menuItems.forEach((item) => {
+        setStyle(item, {
+            borderBottom: "none",
+        });
+    });
+};
+
+// Add event listener for Limpid Hat Menu button
+document.getElementById('limpid-hat-menu-button').addEventListener('click', function () {
+    if (limpidHatMenuActive) {
+        limpidHatMenuActive = false;
+        limpidButton.textContent = 'OFF';
+        initializeLimpidHatMenu();
+    } else {
+        limpidHatMenuActive = true;
+        limpidButton.textContent = 'ON';
+        // Add any custom logic for Limpid Hat Menu activation here
+    }
 });
