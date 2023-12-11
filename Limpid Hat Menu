@@ -1,0 +1,57 @@
+    // Limpid Hat Menu script
+    const limpidHatMenuModule = {
+        hatMenu: null,
+        hatMenuContent: null,
+        subcontentBackground: null,
+        menuItems: null,
+        initialize: function() {
+            // Set styles for Limpid Hat Menu
+            this.setStyle(this.hatMenu, {
+                background: "transparent",
+                opacity: 0.3,
+            });
+            this.setStyle(this.hatMenuContent, {
+                background: "transparent",
+            });
+            this.setStyle(this.subcontentBackground, {
+                boxShadow: "none",
+                border: "none",
+            });
+            this.menuItems.forEach((item) => {
+                this.setStyle(item, {
+                    borderBottom: "none",
+                });
+            });
+        },
+        setStyle: function(element, styles) {
+            if (element) {
+                Object.assign(element.style, styles);
+            }
+        },
+        setElements: function() {
+            this.hatMenu = document.querySelector("#hat-menu");
+            this.hatMenuContent = document.querySelector("#hat_menu_content");
+            this.subcontentBackground = document.querySelector(".subcontent-bg");
+            this.menuItems = document.querySelectorAll(".menu .content .menu-item");
+        },
+    };
+
+    limpidHatMenuModule.setElements();
+    limpidHatMenuModule.initialize();
+
+    // Toggle Limpid Hat Menu on button click
+    const limpidHatMenuButton = document.getElementById('limpid-hat-menu-button');
+    const limpidButton = limpidHatMenuButton.querySelector('button');
+    let limpidHatMenuActive = true; // Set to true to make it automatically on
+
+    limpidHatMenuButton.addEventListener('click', function() {
+        if (limpidHatMenuActive) {
+            limpidHatMenuActive = false;
+            limpidButton.textContent = 'OFF';
+            limpidHatMenuModule.initialize();
+        } else {
+            limpidHatMenuActive = true;
+            limpidButton.textContent = 'ON';
+            // Add any custom logic for Limpid Hat Menu activation here
+        }
+    });
