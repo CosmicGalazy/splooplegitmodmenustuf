@@ -1,92 +1,61 @@
-// CPS Counter script
-    const cpsModule = {
-        log: console.log,
-        count: 0,
-        reduce: function() {
-            this.count -= 1;
-            this.element.setText(this.count);
-        },
-        increase: function() {
-            this.count += 1;
-            this.element.setText(this.count);
-        },
-        sleep: function() {
-            return new Promise((resolve) => {
-                setTimeout(resolve, 1000);
-            });
-        },
-        createElement: function() {
-            this.element = document.createElement("div");
-            this.element.setText = (count) => {
-                const countNum = parseInt(count);
-                if (countNum < 0) {
-                    count = 0;
-                    this.log("bug...");
-                }
-                this.element.textContent = `Cps: ${count}`;
-            };
-            this.element.setText(0);
-            this.style = this.element.style;
-            this.element.classList.add("text-shadowed-3");
-            this.style.position = "absolute";
-            this.style.top = "20px";
-            this.style.width = "100%";
-            this.style.pointerEvents = "none";
-            this.style.textAlign = "center";
-            this.style.color = "white";
-            this.style.fontSize = "20px";
-            document.body.appendChild(this.element);
-        },
-        update: async function() {
-            this.increase();
-            await this.sleep();
-            this.reduce();
-        },
+const Cps = {
+  log: console.log,
+  count: 0,
+  reduce() {
+    this.count -= 1;
+    this.updateText();
+  },
+  increase() {
+    this.count += 1;
+    this.updateText();
+  },
+  sleep: () => new Promise(resolve => setTimeout(resolve, 1000)),
+  createElement() {
+    this.element = document.createElement("div");
+    this.element.setText = count => {
+      const countNum = parseInt(count);
+      if (countNum < 0) {
+        count = 0;
+        Cps.log("bug...");
+      }
+      this.element.textContent = `Cps: ${count}`;
     };
-
-    cpsModule.createElement();
-    cpsModule.element.style.display = 'none'; // Hide CPS counter by default
-
-    // Toggle CPS Counter on button click
-    const cpsCounterButton = document.getElementById('cps-counter-button');
-    const cpsButton = cpsCounterButton.querySelector('button');
-    let cpsCounterActive = false;
-
-    cpsCounterButton.addEventListener('click', function() {
-        if (cpsCounterActive) {
-            cpsCounterActive = false;
-            cpsButton.textContent = 'OFF';
-            cpsModule.element.style.display = 'none'; // Hide CPS counter
-            document.removeEventListener("mousedown", cpsUpdateHandler);
-            document.removeEventListener("keydown", spaceKeyDownHandler);
-            document.removeEventListener("keyup", spaceKeyUpHandler);
-            cpsModule.spaceActive = false;
-            cpsModule.count = 0;
-            cpsModule.element.setText(cpsModule.count);
-        } else {
-            cpsCounterActive = true;
-            cpsButton.textContent = 'ON';
-            cpsModule.element.style.display = 'block'; // Show CPS counter
-            document.addEventListener("mousedown", cpsUpdateHandler);
-            document.addEventListener("keydown", spaceKeyDownHandler);
-            document.addEventListener("keyup", spaceKeyUpHandler);
-        }
+    this.element.setText(0);
+    this.style = this.element.style;
+    this.element.classList.add("text-shadowed-3");
+    Object.assign(this.style, {
+      position: "absolute",
+      top: "20px",
+      width: "100%",
+      pointerEvents: "none",
+      textAlign: "center",
+      color: "white",
+      fontSize: "20px"
     });
+    document.body.appendChild(this.element);
+  },
+  updateText() {
+    this.element.setText(this.count);
+  },
+  update: async function() {
+    this.increase();
+    await this.sleep();
+    this.reduce();
+  },
+  spaceActive: false
+};
 
-    // Event handlers for CPS Counter
-    function cpsUpdateHandler() {
-        cpsModule.update();
-    }
+Cps.createElement();
 
-    function spaceKeyDownHandler(event) {
-        if (event.code === "Space" && !cpsModule.spaceActive) {
-            cpsModule.update();
-            cpsModule.spaceActive = true;
-        }
-    }
+document.addEventListener("mousedown", () => Cps.update());
 
-    function spaceKeyUpHandler(event) {
-        if (event.code === "Space") {
-            cpsModule.spaceActive = false;
-        }
-    }
+document.addEventListener("keydown", event => {
+  if (event.code !== "Space" || Cps.spaceActive) return;
+  Cps.update();
+  Cps.spaceActive = true;
+});
+
+document.addEventListener("keyup", event => {
+  if (event.code !== "Space") return;
+  Cps.spaceActive = false;
+});
